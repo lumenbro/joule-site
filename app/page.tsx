@@ -2,6 +2,7 @@ import { Hero } from "@/components/Hero";
 import { Explainer } from "@/components/Explainer";
 import { GpuChart } from "@/components/GpuChart";
 import { JouleChart } from "@/components/JouleChart";
+import { WalletDashboard } from "@/components/WalletDashboard";
 import { SwapCard } from "@/components/SwapCard";
 import { Footer } from "@/components/Footer";
 
@@ -24,6 +25,7 @@ export default function Home() {
         </div>
       </section>
 
+      <WalletDashboard />
       <SwapCard />
       <Footer />
     </main>
