@@ -7,6 +7,10 @@ export const metadata: Metadata = {
   title: "JOULE — Prepaid AI Compute Credits on Stellar",
   description:
     "JOULE is a prepaid AI compute credit on the Stellar network. 1 JOULE = 1,000 Joules of estimated AI inference energy, priced by real GPU market data.",
+  icons: {
+    icon: "/joule-icon.jpg",
+    apple: "/joule-icon.jpg",
+  },
   openGraph: {
     title: "JOULE — Prepaid AI Compute Credits on Stellar",
     description:

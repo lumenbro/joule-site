@@ -7,6 +7,31 @@ import { getQuote, executeSwap, toStroops, type QuoteResult } from "@/lib/swap";
 
 type Direction = "buy" | "sell"; // buy = USDC→JOULE, sell = JOULE→USDC
 
+function parseSwapError(message: string, tokenInLabel: string): string {
+  // Insufficient balance — USDC SAC returns "resulting balance is not within the allowed range"
+  if (message.includes("not within the allowed range")) {
+    return `Insufficient ${tokenInLabel} balance. Make sure your wallet has enough ${tokenInLabel} to swap.`;
+  }
+  // No trustline for USDC (classic asset)
+  if (message.includes("#10") && message.includes("transfer")) {
+    return `Insufficient ${tokenInLabel} balance or missing trustline.`;
+  }
+  // User rejected in wallet
+  if (message.includes("User declined") || message.includes("rejected") || message.includes("-1")) {
+    return "Transaction was cancelled.";
+  }
+  // Slippage / price moved
+  if (message.includes("amount_out_minimum") || message.includes("Too little received")) {
+    return "Price moved beyond your slippage tolerance. Try increasing slippage or reducing amount.";
+  }
+  // Generic simulation failure — extract the contract error code if present
+  const codeMatch = message.match(/Error\(Contract, #(\d+)\)/);
+  if (codeMatch) {
+    return `Swap failed (contract error #${codeMatch[1]}). This usually means insufficient balance or liquidity.`;
+  }
+  return message;
+}
+
 export function SwapCard() {
   const { publicKey, connected, connect, signTransaction } = useWallet();
   const [direction, setDirection] = useState<Direction>("buy");
@@ -77,7 +102,7 @@ export function SwapCard() {
       setQuote(null);
     } catch (err: any) {
       console.error("Swap error:", err);
-      setError(err.message || "Swap failed");
+      setError(parseSwapError(err.message || "Swap failed", tokenInLabel));
     } finally {
       setSwapping(false);
     }
