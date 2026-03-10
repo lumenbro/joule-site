@@ -4,17 +4,17 @@ import { ConnectWallet } from "@/components/ConnectWallet";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "JOULE — Prepaid AI Compute Credits on Stellar",
+  title: "LumenJoule — Prepaid AI Compute Credits on Stellar",
   description:
-    "JOULE is a prepaid AI compute credit on the Stellar network. 1 JOULE = 1,000 Joules of estimated AI inference energy, priced by real GPU market data.",
+    "LumenJoule is a prepaid AI compute credit on the Stellar network. 1 LumenJoule = 1,000 Joules of estimated AI inference energy, priced by real GPU market data.",
   icons: {
     icon: "/joule-icon.jpg",
     apple: "/joule-icon.jpg",
   },
   openGraph: {
-    title: "JOULE — Prepaid AI Compute Credits on Stellar",
+    title: "LumenJoule — Prepaid AI Compute Credits on Stellar",
     description:
-      "Energy-denominated AI compute credits. Swap USDC for JOULE on SushiSwap V3.",
+      "Energy-denominated AI compute credits. Swap USDC for LumenJoule on Soroswap.",
     type: "website",
   },
 };
@@ -34,10 +34,10 @@ export default function RootLayout({
               <a href="/" className="flex items-center gap-2">
                 <img
                   src="/joule-icon.jpg"
-                  alt="JOULE"
+                  alt="LumenJoule"
                   className="w-8 h-8 rounded-lg"
                 />
-                <span className="font-semibold text-lg">JOULE</span>
+                <span className="font-semibold text-lg">LumenJoule</span>
               </a>
               <ConnectWallet />
             </div>

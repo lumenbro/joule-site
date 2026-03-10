@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useWallet } from "./WalletProvider";
 import { getJouleBalance, formatJouleBalance, transferJoule } from "@/lib/soroban";
-import { JOULE_TOKEN, STELLAR_EXPERT_BASE, TOKEN_DECIMALS } from "@/lib/constants";
+import { LJOULE_SAC, STELLAR_EXPERT_BASE, TOKEN_DECIMALS } from "@/lib/constants";
 import { toStroops } from "@/lib/swap";
 
 function parseTransferError(message: string): string {
@@ -11,7 +11,7 @@ function parseTransferError(message: string): string {
     return "Transaction was cancelled.";
   }
   if (message.includes("not within the allowed range") || message.includes("#1")) {
-    return "Insufficient JOULE balance.";
+    return "Insufficient LumenJoule balance.";
   }
   const codeMatch = message.match(/Error\(Contract, #(\d+)\)/);
   if (codeMatch) {
@@ -126,11 +126,11 @@ export function WalletDashboard() {
         <div className="rounded-2xl bg-white/5 border border-white/10 p-6">
           {/* Balance display */}
           <div className="text-center mb-6">
-            <div className="text-sm text-gray-400 mb-2">JOULE Balance</div>
+            <div className="text-sm text-gray-400 mb-2">LumenJoule Balance</div>
             <div className="text-4xl font-mono font-bold text-joule-400 mb-1">
               {displayBalance}
             </div>
-            <div className="text-sm text-gray-500">JOULE</div>
+            <div className="text-sm text-gray-500">LumenJoule</div>
             <button
               onClick={fetchBalance}
               disabled={loading}
@@ -157,16 +157,16 @@ export function WalletDashboard() {
           <div className="rounded-lg bg-white/5 p-3 mb-6">
             <div className="text-xs text-gray-500 mb-1">Token Contract</div>
             <a
-              href={`${STELLAR_EXPERT_BASE}/${JOULE_TOKEN}`}
+              href={`${STELLAR_EXPERT_BASE}/${LJOULE_SAC}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-xs font-mono text-joule-400 hover:text-joule-300 transition break-all"
             >
-              {JOULE_TOKEN}
+              {LJOULE_SAC}
             </a>
             <div className="flex gap-4 mt-2 text-xs text-gray-500">
-              <span>Name: Joule Compute Credit</span>
-              <span>Symbol: JOULE</span>
+              <span>Name: LumenJoule Compute Credit</span>
+              <span>Symbol: LumenJoule</span>
               <span>Decimals: {TOKEN_DECIMALS}</span>
             </div>
           </div>
@@ -180,7 +180,7 @@ export function WalletDashboard() {
             }}
             className="w-full rounded-xl bg-joule-600/20 border border-joule-500/30 py-2.5 text-sm font-semibold text-joule-400 hover:bg-joule-600/30 transition mb-4"
           >
-            {showTransfer ? "Hide Transfer" : "Transfer JOULE"}
+            {showTransfer ? "Hide Transfer" : "Transfer LumenJoule"}
           </button>
 
           {/* Transfer form */}
@@ -201,7 +201,7 @@ export function WalletDashboard() {
 
               <div>
                 <label className="text-sm text-gray-400 mb-1 block">
-                  Amount (JOULE)
+                  Amount (LumenJoule)
                 </label>
                 <div className="flex items-center gap-2">
                   <input
@@ -249,7 +249,7 @@ export function WalletDashboard() {
                 disabled={transferring || !recipient || !amount}
                 className="w-full rounded-xl bg-joule-600 py-3 text-sm font-semibold text-white hover:bg-joule-500 disabled:opacity-50 disabled:cursor-not-allowed transition"
               >
-                {transferring ? "Sending..." : "Send JOULE"}
+                {transferring ? "Sending..." : "Send LumenJoule"}
               </button>
 
               <p className="text-xs text-gray-600 text-center">

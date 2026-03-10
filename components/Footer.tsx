@@ -1,16 +1,17 @@
 "use client";
 
-import { JOULE_TOKEN, USDC_SAC, SUSHI_ROUTER, STELLAR_EXPERT_BASE } from "@/lib/constants";
+import { LJOULE_SAC, USDC_SAC, SOROSWAP_ROUTER, REBALANCER_ADMIN, STELLAR_EXPERT_BASE } from "@/lib/constants";
 
 const contracts = [
-  { label: "JOULE Token", address: JOULE_TOKEN },
+  { label: "LumenJoule SAC", address: LJOULE_SAC },
+  { label: "RebalancerAdmin", address: REBALANCER_ADMIN },
   { label: "USDC (SAC)", address: USDC_SAC },
-  { label: "SushiSwap V3 Router", address: SUSHI_ROUTER },
+  { label: "Soroswap V2 Router", address: SOROSWAP_ROUTER },
 ];
 
 const links = [
-  { label: "StellarExpert", href: `${STELLAR_EXPERT_BASE}/${JOULE_TOKEN}` },
-  { label: "GitHub", href: "https://github.com/brandonsurh/joule-contracts" },
+  { label: "StellarExpert", href: `${STELLAR_EXPERT_BASE}/${LJOULE_SAC}` },
+  { label: "GitHub", href: "https://github.com/lumenbro/lumenjoule-contracts" },
   { label: "x402 Protocol", href: "https://x402.org" },
   { label: "lumenbro.com", href: "https://lumenbro.com" },
 ];
@@ -64,7 +65,7 @@ export function Footer() {
         </div>
 
         <div className="mt-12 pt-6 border-t border-white/5 text-center text-xs text-gray-600">
-          JOULE is a prepaid compute credit, not a currency, investment, or security.
+          LumenJoule is a prepaid compute credit, not a currency, investment, or security.
         </div>
       </div>
     </footer>

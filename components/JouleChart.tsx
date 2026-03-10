@@ -110,7 +110,7 @@ export function JouleChart() {
   return (
     <div className="rounded-2xl bg-white/5 border border-white/10 p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold">JOULE Price (USD)</h3>
+        <h3 className="text-lg font-semibold">LumenJoule Price (USD)</h3>
         <div className="flex gap-1">
           {(["24h", "7d", "30d", "all"] as TimeRange[]).map((r) => (
             <button

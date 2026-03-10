@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useWallet } from "./WalletProvider";
-import { JOULE_TOKEN, USDC_SAC } from "@/lib/constants";
+import { LJOULE_SAC, USDC_SAC } from "@/lib/constants";
 import { getQuote, executeSwap, toStroops, type QuoteResult } from "@/lib/swap";
 
 type Direction = "buy" | "sell"; // buy = USDC→JOULE, sell = JOULE→USDC
@@ -44,10 +44,10 @@ export function SwapCard() {
   const [slippage, setSlippage] = useState(1); // 1%
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
-  const tokenIn = direction === "buy" ? USDC_SAC : JOULE_TOKEN;
-  const tokenOut = direction === "buy" ? JOULE_TOKEN : USDC_SAC;
-  const tokenInLabel = direction === "buy" ? "USDC" : "JOULE";
-  const tokenOutLabel = direction === "buy" ? "JOULE" : "USDC";
+  const tokenIn = direction === "buy" ? USDC_SAC : LJOULE_SAC;
+  const tokenOut = direction === "buy" ? LJOULE_SAC : USDC_SAC;
+  const tokenInLabel = direction === "buy" ? "USDC" : "LJOULE";
+  const tokenOutLabel = direction === "buy" ? "LJOULE" : "USDC";
 
   // Debounced quote fetching
   useEffect(() => {
@@ -240,7 +240,7 @@ export function SwapCard() {
 
           {/* Pool info */}
           <p className="text-xs text-gray-600 text-center mt-4">
-            Via SushiSwap V3 on Stellar (0.3% pool fee)
+            Via Soroswap on Stellar (0.3% pool fee)
           </p>
         </div>
       </div>

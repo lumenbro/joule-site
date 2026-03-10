@@ -3,17 +3,15 @@ import {
   Contract,
   TransactionBuilder,
   xdr,
-  nativeToScVal,
   scValToNative,
-  Memo,
-  TimeoutInfinite,
 } from '@stellar/stellar-sdk';
 import { rpc } from '@stellar/stellar-sdk';
 import {
-  SUSHI_ROUTER,
-  JOULE_TOKEN,
+  SOROSWAP_ROUTER,
+  SOROSWAP_PAIR,
+  LJOULE_SAC,
   USDC_SAC,
-  POOL_FEE,
+  LJOULE_IS_TOKEN0,
   RPC_URL,
   NETWORK_PASSPHRASE,
   TOKEN_DECIMALS,
@@ -54,49 +52,53 @@ export function fromStroops(stroops: bigint): string {
 }
 
 /**
- * Build the ExactInputParams struct for SushiSwap V3
+ * Ceiling division for bigint
  */
-function buildSwapParams(
-  sender: string,
-  tokenIn: string,
-  tokenOut: string,
-  amountIn: bigint,
-  amountOutMin: bigint,
-  deadline: number,
-): xdr.ScVal {
-  return xdr.ScVal.scvMap([
-    new xdr.ScMapEntry({
-      key: xdr.ScVal.scvSymbol('amount_in'),
-      val: buildI128(amountIn),
-    }),
-    new xdr.ScMapEntry({
-      key: xdr.ScVal.scvSymbol('amount_out_minimum'),
-      val: buildI128(amountOutMin),
-    }),
-    new xdr.ScMapEntry({
-      key: xdr.ScVal.scvSymbol('deadline'),
-      val: xdr.ScVal.scvU64(xdr.Uint64.fromString(deadline.toString())),
-    }),
-    new xdr.ScMapEntry({
-      key: xdr.ScVal.scvSymbol('fees'),
-      val: xdr.ScVal.scvVec([xdr.ScVal.scvU32(POOL_FEE)]),
-    }),
-    new xdr.ScMapEntry({
-      key: xdr.ScVal.scvSymbol('path'),
-      val: xdr.ScVal.scvVec([
-        Address.fromString(tokenIn).toScVal(),
-        Address.fromString(tokenOut).toScVal(),
-      ]),
-    }),
-    new xdr.ScMapEntry({
-      key: xdr.ScVal.scvSymbol('recipient'),
-      val: Address.fromString(sender).toScVal(),
-    }),
-    new xdr.ScMapEntry({
-      key: xdr.ScVal.scvSymbol('sender'),
-      val: Address.fromString(sender).toScVal(),
-    }),
-  ]);
+function ceilDiv(a: bigint, b: bigint): bigint {
+  return (a + b - 1n) / b;
+}
+
+/**
+ * Calculate swap output using Soroswap V2 constant-product formula.
+ * Uses ceiling-div for the 0.3% fee (matches Soroswap's checked_ceiling_div).
+ */
+function calculateOutput(reserveIn: bigint, reserveOut: bigint, amountIn: bigint): bigint {
+  if (reserveIn <= 0n || reserveOut <= 0n || amountIn <= 0n) return 0n;
+  const fee = ceilDiv(amountIn * 3n, 1000n);
+  const amountInAfterFee = amountIn - fee;
+  return (reserveOut * amountInAfterFee) / (reserveIn + amountInAfterFee);
+}
+
+/**
+ * Read reserves from the Soroswap V2 pair contract
+ */
+async function getReserves(sender: string): Promise<{ reserveLjoule: bigint; reserveUsdc: bigint }> {
+  const pair = new Contract(SOROSWAP_PAIR);
+  const account = await server.getAccount(sender);
+
+  const tx = new TransactionBuilder(account, {
+    fee: '100',
+    networkPassphrase: NETWORK_PASSPHRASE,
+  })
+    .addOperation(pair.call('get_reserves'))
+    .setTimeout(30)
+    .build();
+
+  const sim = await server.simulateTransaction(tx);
+
+  if (rpc.Api.isSimulationError(sim)) {
+    throw new Error(`Reserve simulation failed: ${sim.error}`);
+  }
+
+  const retval = (sim as rpc.Api.SimulateTransactionSuccessResponse).result?.retval;
+  if (!retval) throw new Error('No result from get_reserves');
+
+  const result = scValToNative(retval);
+  const [r0, r1] = Array.isArray(result) ? result : [result.reserve0 ?? result[0], result.reserve1 ?? result[1]];
+
+  return LJOULE_IS_TOKEN0
+    ? { reserveLjoule: BigInt(r0), reserveUsdc: BigInt(r1) }
+    : { reserveLjoule: BigInt(r1), reserveUsdc: BigInt(r0) };
 }
 
 export interface QuoteResult {
@@ -105,7 +107,8 @@ export interface QuoteResult {
 }
 
 /**
- * Get a swap quote via SushiSwap V3 Router quote_exact_input (read-only simulation)
+ * Get a swap quote by reading pair reserves and calculating output locally.
+ * No on-chain simulation needed — pure math from Soroswap V2 constant-product formula.
  */
 export async function getQuote(
   sender: string,
@@ -118,33 +121,17 @@ export async function getQuote(
     throw new Error('Amount must be greater than 0');
   }
 
-  const deadline = Math.floor(Date.now() / 1000) + 300;
-  const params = buildSwapParams(sender, tokenIn, tokenOut, amountInStroops, 0n, deadline);
+  const { reserveLjoule, reserveUsdc } = await getReserves(sender);
 
-  const contract = new Contract(SUSHI_ROUTER);
-  const account = await server.getAccount(sender);
+  const isBuy = tokenIn === USDC_SAC; // USDC → LumenJoule
+  const reserveIn = isBuy ? reserveUsdc : reserveLjoule;
+  const reserveOut = isBuy ? reserveLjoule : reserveUsdc;
 
-  const tx = new TransactionBuilder(account, {
-    fee: '100',
-    networkPassphrase: NETWORK_PASSPHRASE,
-  })
-    .addOperation(contract.call('quote_exact_input', params))
-    .setTimeout(30)
-    .build();
+  const amountOut = calculateOutput(reserveIn, reserveOut, amountInStroops);
 
-  const simResult = await server.simulateTransaction(tx);
-
-  if (rpc.Api.isSimulationError(simResult)) {
-    throw new Error(`Quote simulation failed: ${simResult.error}`);
+  if (amountOut <= 0n) {
+    throw new Error('Insufficient liquidity for this trade');
   }
-
-  const resultXdr = (simResult as rpc.Api.SimulateTransactionSuccessResponse).result?.retval;
-  if (!resultXdr) {
-    throw new Error('No result from quote simulation');
-  }
-
-  const result = scValToNative(resultXdr);
-  const amountOut = BigInt(result?.amount ?? result);
 
   return {
     amountOut: fromStroops(amountOut),
@@ -162,7 +149,7 @@ export interface SwapParams {
 }
 
 /**
- * Execute a swap via SushiSwap V3 Router swap_exact_input
+ * Execute a swap via Soroswap V2 Router swap_exact_tokens_for_tokens.
  * Flow: build tx → simulate → assemble → sign via wallet → submit
  */
 export async function executeSwap(params: SwapParams): Promise<string> {
@@ -171,16 +158,26 @@ export async function executeSwap(params: SwapParams): Promise<string> {
   const amountInStroops = toStroops(amountIn);
   const deadline = Math.floor(Date.now() / 1000) + 300; // 5 min deadline
 
-  const swapParams = buildSwapParams(sender, tokenIn, tokenOut, amountInStroops, minAmountOut, deadline);
-
-  const contract = new Contract(SUSHI_ROUTER);
+  const contract = new Contract(SOROSWAP_ROUTER);
   const account = await server.getAccount(sender);
 
   const tx = new TransactionBuilder(account, {
     fee: '10000000', // 1 XLM max fee for Soroban
     networkPassphrase: NETWORK_PASSPHRASE,
   })
-    .addOperation(contract.call('swap_exact_input', swapParams))
+    .addOperation(
+      contract.call(
+        'swap_exact_tokens_for_tokens',
+        buildI128(amountInStroops),
+        buildI128(minAmountOut),
+        xdr.ScVal.scvVec([
+          Address.fromString(tokenIn).toScVal(),
+          Address.fromString(tokenOut).toScVal(),
+        ]),
+        Address.fromString(sender).toScVal(),
+        xdr.ScVal.scvU64(xdr.Uint64.fromString(deadline.toString())),
+      )
+    )
     .setTimeout(300)
     .build();
 

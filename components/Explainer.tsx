@@ -17,7 +17,7 @@ const steps = [
       </svg>
     ),
     title: "Oracle",
-    desc: "On-chain oracle converts GPU energy cost to a JOULE price every 5 minutes",
+    desc: "On-chain oracle converts GPU energy cost to a LumenJoule price daily",
   },
   {
     icon: (
@@ -25,8 +25,8 @@ const steps = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
       </svg>
     ),
-    title: "JOULE Price",
-    desc: "1 JOULE = 1,000 Joules of AI inference energy, tradeable on SushiSwap V3",
+    title: "LumenJoule Price",
+    desc: "1 LumenJoule = 1,000 Joules of AI inference energy, tradeable on Soroswap",
   },
 ];
 
@@ -35,12 +35,12 @@ export function Explainer() {
     <section className="py-20 px-6">
       <div className="max-w-5xl mx-auto">
         <h2 className="text-3xl font-bold text-center mb-4">
-          What is JOULE?
+          What is LumenJoule?
         </h2>
         <p className="text-center text-gray-400 mb-16 max-w-2xl mx-auto">
-          JOULE is a prepaid AI compute credit on Stellar. Each JOULE represents
-          1,000 Joules of estimated AI inference energy, priced by real GPU
-          market data.
+          LumenJoule is a prepaid AI compute credit on Stellar. Each LumenJoule
+          represents 1,000 Joules of estimated AI inference energy, priced by
+          real GPU market data.
         </p>
 
         {/* 3-step flow */}

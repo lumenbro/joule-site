@@ -6,7 +6,7 @@ import {
   xdr,
 } from '@stellar/stellar-sdk';
 import { rpc } from '@stellar/stellar-sdk';
-import { JOULE_TOKEN, RPC_URL, NETWORK_PASSPHRASE, TOKEN_DECIMALS } from './constants';
+import { LJOULE_SAC, RPC_URL, NETWORK_PASSPHRASE, TOKEN_DECIMALS } from './constants';
 
 const server = new rpc.Server(RPC_URL);
 
@@ -23,10 +23,10 @@ function buildI128(amount: bigint): xdr.ScVal {
 }
 
 /**
- * Read JOULE balance for an address via contract.balance(id)
+ * Read LumenJoule balance for an address via SAC balance(id)
  */
 export async function getJouleBalance(address: string): Promise<bigint> {
-  const contract = new Contract(JOULE_TOKEN);
+  const contract = new Contract(LJOULE_SAC);
   const account = await server.getAccount(address);
 
   const tx = new TransactionBuilder(account, {
@@ -66,7 +66,7 @@ export function formatJouleBalance(raw: bigint): string {
 }
 
 /**
- * Build, simulate, and return a signed JOULE transfer transaction.
+ * Build, simulate, and return a signed LumenJoule transfer transaction.
  * Caller must provide signTransaction from wallet kit.
  */
 export async function transferJoule(params: {
@@ -77,7 +77,7 @@ export async function transferJoule(params: {
 }): Promise<string> {
   const { from, to, amount, signTransaction } = params;
 
-  const contract = new Contract(JOULE_TOKEN);
+  const contract = new Contract(LJOULE_SAC);
   const account = await server.getAccount(from);
 
   const tx = new TransactionBuilder(account, {
