@@ -16,6 +16,22 @@ export const metadata: Metadata = {
     description:
       "Energy-denominated AI compute credits. Swap USDC for LumenJoule on Soroswap.",
     type: "website",
+    url: "https://joule.lumenbro.com",
+    images: [
+      {
+        url: "https://joule.lumenbro.com/joule-icon.jpg",
+        width: 512,
+        height: 512,
+        alt: "LumenJoule",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: "LumenJoule — Prepaid AI Compute Credits on Stellar",
+    description:
+      "Energy-denominated AI compute credits. 1 LumenJoule = 1,000 Joules of AI inference energy.",
+    images: ["https://joule.lumenbro.com/joule-icon.jpg"],
   },
 };
 
